@@ -9,6 +9,10 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
+    #  Node.js 24
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -19,7 +23,6 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
-    # 更新缓存 action 到 v4，避免 Node 20 废弃警告
     - name: Cache Maven packages
       uses: actions/cache@v4
       with:
