@@ -1,0 +1,72 @@
+# 1. 定义工作流名称，会显示在 GitHub Actions 界面上
+name: Java CI/CD with Maven
+
+# 2. 触发器：当 main 分支有新推送 (push) 时自动运行
+on:
+  push:
+    branches: [ "main" ]
+  # 也允许在 GitHub 网页上手动触发这个工作流，方便测试
+  workflow_dispatch:
+
+# 3. 定义这个自动化流程需要执行的任务 (job)
+jobs:
+  build-and-deploy:
+    # 指定任务在 GitHub 提供的 Ubuntu 最新版虚拟机上运行
+    runs-on: ubuntu-latest
+
+    steps:
+    # 步骤 4: 将你的项目代码下载到虚拟机上
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    # 步骤 5: 安装并配置项目所需的 JDK 17 环境
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+
+    # 步骤 6: (可选) 利用缓存加速 Maven 依赖的下载，节省构建时间
+    - name: Cache Maven packages
+      uses: actions/cache@v3
+      with:
+        path: ~/.m2/repository
+        key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+        restore-keys: ${{ runner.os }}-maven-
+
+    # 步骤 7: 执行 Maven 构建，打包项目 (跳过测试以加快速度)
+    - name: Build with Maven
+      run: mvn clean package -DskipTests
+
+    # 步骤 8: 列出打包好的文件，用于在日志中确认构建是否成功
+    - name: List packaged files
+      run: ls -la target/
+
+    # 步骤 9: 使用 SCP 将构建好的 JAR 包上传到你的服务器
+    - name: Upload JAR to Server
+      uses: appleboy/scp-action@v0.1.4
+      with:
+        host: ${{ secrets.REMOTE_HOST }}
+        username: ${{ secrets.REMOTE_USER }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        # 指定要上传的文件和服务器上的目标路径
+        source: "target/demo-0.0.1-SNAPSHOT.jar"
+        target: "/opt/app/"
+        # 上传前删除 target 目录下的旧文件，避免冲突
+        rm: true
+
+    # 步骤 10: 通过 SSH 连接到服务器，执行命令重启应用
+    - name: Restart Application
+      uses: appleboy/ssh-action@v0.1.5
+      with:
+        host: ${{ secrets.REMOTE_HOST }}
+        username: ${{ secrets.REMOTE_USER }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        # 在服务器上执行的远程命令
+        script: |
+          echo ">>> 重启应用服务 <<<"
+          sudo systemctl restart demo.service
+          echo ">>> 等待应用启动 ... <<<"
+          sleep 10
+          echo ">>> 检查服务状态 <<<"
+          sudo systemctl status demo.service --no-pager
