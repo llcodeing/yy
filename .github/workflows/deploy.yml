@@ -34,32 +34,29 @@ jobs:
     - name: List packaged files
       run: ls -la target/
 
+    # ① 启动 ssh-agent 并加载私钥
     - name: Setup SSH Agent
       uses: webfactory/ssh-agent@v0.8.0
       with:
         ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
+    # ② 信任服务器主机
     - name: Add server to known_hosts
       run: ssh-keyscan -H ${{ secrets.REMOTE_HOST }} >> ~/.ssh/known_hosts
 
+    # ③ 直接使用 scp 上传（无需第三方 action）
     - name: Upload JAR to Server
-      uses: appleboy/scp-action@v0.1.4
-      with:
-        host: ${{ secrets.REMOTE_HOST }}
-        username: ${{ secrets.REMOTE_USER }}
-        source: "target/demo-0.0.1-SNAPSHOT.jar"
-        target: "/opt/app/"
-        rm: true
+      run: |
+        scp target/demo-0.0.1-SNAPSHOT.jar ${{ secrets.REMOTE_USER }}@${{ secrets.REMOTE_HOST }}:/opt/app/
 
+    # ④ 直接使用 ssh 重启应用（无需第三方 action）
     - name: Restart Application
-      uses: appleboy/ssh-action@v0.1.5
-      with:
-        host: ${{ secrets.REMOTE_HOST }}
-        username: ${{ secrets.REMOTE_USER }}
-        script: |
+      run: |
+        ssh ${{ secrets.REMOTE_USER }}@${{ secrets.REMOTE_HOST }} << 'EOF'
           echo ">>> 重启应用服务 <<<"
           sudo systemctl restart demo.service
           echo ">>> 等待应用启动 ... <<<"
           sleep 10
           echo ">>> 检查服务状态 <<<"
           sudo systemctl status demo.service --no-pager
+        EOF
