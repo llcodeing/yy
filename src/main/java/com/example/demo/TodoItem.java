@@ -6,7 +6,7 @@ public class TodoItem implements Serializable {
     private Long id;
     private String title;
     private boolean done;
-
+    private String attachmentUrl;
     // 无参构造，必须
     public TodoItem() {}
 
@@ -39,4 +39,7 @@ public class TodoItem implements Serializable {
     public void setDone(boolean done) {
         this.done = done;
     }
+
+    public String getAttachmentUrl() { return attachmentUrl; }
+    public void setAttachmentUrl(String attachmentUrl) { this.attachmentUrl = attachmentUrl; }
 }
