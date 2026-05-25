@@ -49,6 +49,9 @@ jobs:
       run: |
         scp target/demo-0.0.1-SNAPSHOT.jar ${{ secrets.REMOTE_USER }}@${{ secrets.REMOTE_HOST }}:/opt/app/
 
+    - name: Upload config to Server
+      run: scp application-prod.properties ${{ secrets.REMOTE_USER }}@${{ secrets.REMOTE_HOST }}:/opt/app/
+
     # ④ 直接使用 ssh 重启应用（无需第三方 action）
     - name: Restart Application
       run: |
