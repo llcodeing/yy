@@ -16,6 +16,10 @@ public class FileController {
     @Autowired
     private OssUtil ossUtil;
 
+    @PostMapping("/uploadTest")
+    public Result<String> uploadFileTest(@RequestParam("file") MultipartFile file) {
+        return Result.success("测试成功");
+    }
     /**
      * 上传文件（默认1小时有效期）
      */

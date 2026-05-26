@@ -30,15 +30,18 @@ public class OssUtil {
      */
     private OSS createOSSClient() {
         try {
-            // 从环境变量自动获取 AccessKey
             EnvironmentVariableCredentialsProvider credentialsProvider =
                     CredentialsProviderFactory.newEnvironmentVariableCredentialsProvider();
-
+            System.out.println(">>> OSS Endpoint: " + endpoint);
+            System.out.println(">>> OSS BucketName: " + bucketName);
+            System.out.println(">>> OSS AccessKeyId from env: " + System.getenv("OSS_ACCESS_KEY_ID"));
             return OSSClientBuilder.create()
                     .endpoint(endpoint)
                     .credentialsProvider(credentialsProvider)
                     .build();
         } catch (Exception e) {
+            System.err.println("!!! 创建 OSS 客户端失败 !!!");
+            e.printStackTrace();
             throw new RuntimeException("创建 OSS 客户端失败，请检查环境变量配置", e);
         }
     }
