@@ -10,14 +10,14 @@ public interface TodoMapper {
     @Select("SELECT * FROM todo")
     List<TodoItem> findAll();
 
-    @Insert("INSERT INTO todo (title, done) VALUES (#{title}, #{done})")
-    @Options(useGeneratedKeys = true, keyProperty = "id")
-    void insert(TodoItem item);
-
     @Select("SELECT * FROM todo WHERE id = #{id}")
     TodoItem findById(Long id);
 
-    @Update("UPDATE todo SET done = #{done} WHERE id = #{id}")
+    @Insert("INSERT INTO todo (title, done, attachment_url) VALUES (#{title}, #{done}, #{attachmentUrl})")
+    @Options(useGeneratedKeys = true, keyProperty = "id")
+    void insert(TodoItem item);
+
+    @Update("UPDATE todo SET done = #{done},attachment_url = #{attachmentUrl} WHERE id = #{id}")
     void update(TodoItem item);
 
     @Select("select * from  todo where title like concat('%',#{keyword},'%')")

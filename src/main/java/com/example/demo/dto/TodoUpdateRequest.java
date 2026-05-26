@@ -6,6 +6,7 @@ public class TodoUpdateRequest {
 
     @Size(max = 100,message = "标题最长100个字符")
     private String title;
+    private String attachmentUrl;
 
     private Boolean done;
 
@@ -23,5 +24,13 @@ public class TodoUpdateRequest {
 
     public void setDone(Boolean done) {
         this.done = done;
+    }
+
+    public String getAttachmentUrl() {
+        return attachmentUrl;
+    }
+
+    public void setAttachmentUrl(String attachmentUrl) {
+        this.attachmentUrl = attachmentUrl;
     }
 }
