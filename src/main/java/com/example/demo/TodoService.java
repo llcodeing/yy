@@ -83,6 +83,7 @@ public class TodoService {
     @CacheEvict(value = "todosCache",key = "'allTodos'")
     public TodoResponse addTodo(TodoCreateRequest request){
         TodoItem item = new TodoItem(request.getTitle());
+        item.setAttachmentUrl(request.getAttachmentUrl());
         todoMapper.insert(item);
         return TodoItemMapper.INSTANCE.toResponse(item);
     }
