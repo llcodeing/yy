@@ -26,6 +26,9 @@ services:
     environment:
       - MODE=standalone
       - PREFER_HOST_MODE=hostname
+      - JVM_XMS=256m
+      - JVM_XMX=256m
+      - JVM_XMN=128m
     ports:
       - "8848:8848"
     volumes:
