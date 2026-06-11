@@ -1,0 +1,83 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    restart: unless-stopped
+    platform: linux/arm64   # ✅ 指定平台
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: todo_db
+      MYSQL_USER: appuser
+      MYSQL_PASSWORD: apppass
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpass"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  nacos:
+    image: nacos/nacos-server:v2.3.1
+    container_name: nacos
+    restart: always
+    platform: linux/amd64
+    environment:
+      - MODE=standalone
+      - PREFER_HOST_MODE=hostname
+    ports:
+      - "8848:8848"
+    volumes:
+      - nacos_data:/home/nacos/data
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    restart: unless-stopped
+    platform: linux/arm64
+    command: redis-server --requirepass redispass
+    ports:
+      - "6379:6379"
+
+  kafka:
+    image: apache/kafka:3.7.0
+    container_name: kafka
+    restart: unless-stopped
+    platform: linux/arm64
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: "broker,controller"
+      KAFKA_CONTROLLER_QUORUM_VOTERS: "1@kafka:9093"
+      KAFKA_LISTENERS: "PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093"
+      KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://kafka:9092"
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT"
+      KAFKA_CONTROLLER_LISTENER_NAMES: "CONTROLLER"
+      KAFKA_INTER_BROKER_LISTENER_NAME: "PLAINTEXT"
+    ports:
+      - "9092:9092"
+    healthcheck:
+      test: ["CMD-SHELL", "echo 'test' | /opt/kafka/bin/kafka-console-producer.sh --bootstrap-server localhost:9092 --topic health-check 2>/dev/null; exit 0"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+
+  demo-app:
+    image: demo-app:latest
+    container_name: demo-app
+    ports:
+      - "8080:8080"
+    platform: linux/arm64
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      kafka:
+        condition: service_healthy
+
+volumes:
+  mysql_data:
+  nacos_data:
