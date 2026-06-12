@@ -56,6 +56,9 @@ jobs:
     - name: Upload JAR to Server
       run: scp target/demo-0.0.1-SNAPSHOT.jar ${{ secrets.REMOTE_USER }}@${{ secrets.REMOTE_HOST }}:/opt/demo-docker/
 
+    - name: Upload docker-compose.yml to Server
+      run: scp docker-compose.yml ${{ secrets.REMOTE_USER }}@${{ secrets.REMOTE_HOST }}:/opt/demo-docker/
+
     - name: Deploy with Docker Compose
       run: |
         ssh ${{ secrets.REMOTE_USER }}@${{ secrets.REMOTE_HOST }} << 'EOF'
