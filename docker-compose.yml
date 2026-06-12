@@ -2,8 +2,8 @@ services:
   mysql:
     image: mysql:8.0
     container_name: mysql
-    restart: always
-    platform: linux/amd64
+    restart: unless-stopped
+    platform: linux/arm64   # ✅ 指定平台
     environment:
       MYSQL_ROOT_PASSWORD: rootpass
       MYSQL_DATABASE: todo_db
@@ -14,11 +14,11 @@ services:
     volumes:
       - mysql_data:/var/lib/mysql
     healthcheck:
-      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpass" ]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpass"]
       interval: 30s
       timeout: 15s
       retries: 10
-      start_period: 120s   # 给 MySQL 2 分钟的初始化时间
+      start_period: 120s
   nacos:
     image: nacos/nacos-server:v2.3.1
     container_name: nacos
